@@ -1,0 +1,43 @@
+Data:
++-----------+--------+-------------+
+| candidate | skill  | proficiency |
++-----------+--------+-------------+
+|       101 | Hadoop | P1          |
+|       101 | SQL    | P2          |
+|       102 | Oracle | P3          |
++-----------+--------+-------------+
+
+Query:
+
+select c1.candidate,c2.skill,'NA' as proficiency from
+	(select candidate from cand) as c1 
+	join 
+	(select 102 as candidate,skill from cand c where not exists
+	(select skill from cand d where c.skill = d.skill and d.candidate = 102) 
+	and c.candidate=101)as c2
+ 	on c1.candidate =c2.candidate group by candidate,skill
+	union
+select c1.candidate,c2.skill,'NA' as proficiency from
+	(select candidate from cand) as c1 
+	join 
+	(select 101 as candidate,skill from cand c where not exists
+	(select skill from cand d where c.skill = d.skill and d.candidate = 101) 
+	and c.candidate=102)as c2
+ 	on c1.candidate =c2.candidate group by candidate,skill
+	union
+select candidate,skill,min(proficiency) from cand
+group by candidate
+ order by candidate,proficiency desc,skill;
+
+
+Output:
+
++-----------+--------+-------------+
+| candidate | skill  | proficiency |
++-----------+--------+-------------+
+|       101 | Hadoop | P1          |
+|       101 | Oracle | NA          |
+|       102 | Oracle | P3          |
+|       102 | Hadoop | NA          |
+|       102 | SQL    | NA          |
++-----------+--------+-------------+
